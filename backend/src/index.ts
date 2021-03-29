@@ -10,6 +10,7 @@ import { buildSchema } from 'type-graphql';
 // Resolve
 import { PostResolvers } from "./resolvers/post";
 import { HelloResolver } from "./resolvers/hello";
+import { UserResolvers } from './resolvers/user';
 
 async function bootstrap () {
     // ------------------   Database    ------------------
@@ -30,7 +31,8 @@ async function bootstrap () {
     let schema = await buildSchema({
         resolvers: [
             HelloResolver,
-            PostResolvers
+            PostResolvers,
+            UserResolvers
         ],
         validate: false
     })

@@ -21,6 +21,7 @@ const apollo_server_express_1 = require("apollo-server-express");
 const type_graphql_1 = require("type-graphql");
 const post_1 = require("./resolvers/post");
 const hello_1 = require("./resolvers/hello");
+const user_1 = require("./resolvers/user");
 function bootstrap() {
     return __awaiter(this, void 0, void 0, function* () {
         let orm = yield core_1.MikroORM.init(mikro_orm_config_1.default);
@@ -32,7 +33,8 @@ function bootstrap() {
         let schema = yield type_graphql_1.buildSchema({
             resolvers: [
                 hello_1.HelloResolver,
-                post_1.PostResolvers
+                post_1.PostResolvers,
+                user_1.UserResolvers
             ],
             validate: false
         });
