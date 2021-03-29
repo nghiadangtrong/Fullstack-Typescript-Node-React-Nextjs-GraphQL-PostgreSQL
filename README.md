@@ -22,6 +22,12 @@
 
 ### Backend
 
+**Run**
+
+```bash
+yarn watch && yarn dev
+```
+
 #### Config basic
 
 ```bash
@@ -214,6 +220,63 @@ mutation {
 # delete post theo id
 mutation {
   deletePost(id: 22)
+}
+```
+
+### Auth
+
+```bash
+yarn add argon2   # Mã hóa password đánh giá tốt hơn so với bcrypt
+```
+
+### Custom
+
+**options Input**
+
+```ts
+@InputType()
+class UsernamePasswordInput {
+    @Field(() => String)
+    username: string;
+
+    @Field(() => String)
+    password: string;
+}
+
+
+@Resolver()
+export class UserResolver {
+
+  @Mutation(() => UserResponse)
+  async register(
+      @Ctx() { em }: MyContext,
+      @Arg('options') options: UsernamePasswordInput
+  ): Promise<UserResponse> {
+    let { username, password } = options;
+    return {}
+  }
+}
+```
+
+**Response**
+
+```ts
+@ObjectType()
+class FieldError {
+    @Field()
+    field: string;
+
+    @Field()
+    message: string;
+}
+
+@ObjectType()
+class UserResponse {
+    @Field(() => [FieldError], { nullable: true })
+    errors?: FieldError[]
+
+    @Field(() => User, { nullable: true })
+    user?: User;
 }
 ```
 
