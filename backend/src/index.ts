@@ -11,6 +11,12 @@ import { buildSchema } from 'type-graphql';
 import { PostResolvers } from "./resolvers/post";
 import { HelloResolver } from "./resolvers/hello";
 import { UserResolvers } from './resolvers/user';
+import redis from 'redis';
+import session from 'express-session';
+import connectRedis from 'connect-redis';
+import { __prod__ } from './constants';
+import { MyContext } from './types';
+
 
 async function bootstrap () {
     // ------------------   Database    ------------------
@@ -21,6 +27,31 @@ async function bootstrap () {
 
     // ------------------   Express    ------------------
     let app = express();
+
+    let RedisStore = connectRedis(session);
+    let redisClient = redis.createClient();
+
+    app.use(
+        session({
+            name: 'qid',
+            store: new RedisStore({
+                client: redisClient,
+                // touch: Thể hiện user đã có session nhưng không làm gì để thay đổi dữ liệu 
+                //      -> Điều này giúp session sống nếu session không thay đổi thường xuyên 
+                // disableTouch: Không cho session sống quá lâu
+                disableTouch: true
+            }),
+            cookie: {
+                maxAge: 1000 * 60 * 60 * 24 * 365, // 1 year
+                httpOnly: true,
+                sameSite: 'lax', // csrf
+                secure: __prod__// cookie chạy duy nhất trên https
+            },
+            saveUninitialized: false,
+            secret: '889s0dfuye7gfqwzncbg8f6',
+            resave: false
+        })
+    )
 
     app.get('/', (_, res) => {
         res.send("/grapql");
@@ -37,10 +68,13 @@ async function bootstrap () {
         validate: false
     })
     
-    // Cho phép chuyền em vào các resolvers
-    let context = () => ({ em: orm.em })
-
-    let serverGraphQL = new ApolloServer({ schema, context });
+    let serverGraphQL = new ApolloServer({ 
+        schema, 
+        // Cho phép chuyền em vào các resolvers
+        context: ({ req, res }): MyContext => {
+            return ({ em: orm.em, req, res }) 
+        }
+    });
     // serverGrapQL.start(); chưa hiểu nguyên nhân có cũng được không có cũng được
     serverGraphQL.applyMiddleware({ app });
 

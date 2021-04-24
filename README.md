@@ -11,6 +11,15 @@
 [] PostgreSQL
 [] MikroORM/TypeORM
 [] Redis
+[] Docker
+
+**Run Docker**
+
+```bash
+docker-composer up // chạy docker 
+
+docker-composer down // Tắt docker
+```
 
 **Frontend**
 

@@ -79,11 +79,11 @@ export class UserResolvers {
 
     @Mutation(() => UserResponse)
     async login(
-        @Ctx() context: MyContext,
+        @Ctx() { em, req }: MyContext,
         @Arg('options') options: UsernamePasswordInput
     ): Promise<UserResponse> {
-        let user = await context.em.findOne(User, { username: options.username });
-        console.log(user);
+        let user = await em.findOne(User, { username: options.username });
+
         if(!user) {
             return {
                 errors: [{ field: 'username', message: "that username doesn't exist" }]
@@ -96,6 +96,8 @@ export class UserResolvers {
                 errors: [{ field: 'passoword', message: 'incorrect password'}]
             }
         }
+
+        req.session.userId = user.id;
 
         return { user };
     }

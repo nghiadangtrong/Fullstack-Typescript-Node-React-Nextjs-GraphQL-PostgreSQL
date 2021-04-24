@@ -1,0 +1,25 @@
+version: '3'
+
+services:
+  database:
+    container_name: db_reddit
+    image: postgres:13.2-alpine
+    restart: always
+    environment:
+      POSTGRES_DB: reddit
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: reverse
+    volumes:
+      - database:/var/lib/postgresql/data
+    ports:
+      - '5432:5432'
+  
+  redis:
+    container_name: redis_reddit
+    image: redis:6.2.1-alpine
+    ports:
+      - '6379:6379'
+
+volumes:
+  database:
+            

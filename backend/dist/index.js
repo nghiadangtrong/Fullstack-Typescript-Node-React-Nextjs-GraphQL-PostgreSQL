@@ -22,11 +22,33 @@ const type_graphql_1 = require("type-graphql");
 const post_1 = require("./resolvers/post");
 const hello_1 = require("./resolvers/hello");
 const user_1 = require("./resolvers/user");
+const redis_1 = __importDefault(require("redis"));
+const express_session_1 = __importDefault(require("express-session"));
+const connect_redis_1 = __importDefault(require("connect-redis"));
+const constants_1 = require("./constants");
 function bootstrap() {
     return __awaiter(this, void 0, void 0, function* () {
         let orm = yield core_1.MikroORM.init(mikro_orm_config_1.default);
         yield orm.getMigrator().up();
         let app = express_1.default();
+        let RedisStore = connect_redis_1.default(express_session_1.default);
+        let redisClient = redis_1.default.createClient();
+        app.use(express_session_1.default({
+            name: 'qid',
+            store: new RedisStore({
+                client: redisClient,
+                disableTouch: true
+            }),
+            cookie: {
+                maxAge: 1000 * 60 * 60 * 24 * 365,
+                httpOnly: true,
+                sameSite: 'lax',
+                secure: constants_1.__prod__
+            },
+            saveUninitialized: false,
+            secret: '889s0dfuye7gfqwzncbg8f6',
+            resave: false
+        }));
         app.get('/', (_, res) => {
             res.send("/grapql");
         });
@@ -38,8 +60,12 @@ function bootstrap() {
             ],
             validate: false
         });
-        let context = () => ({ em: orm.em });
-        let serverGraphQL = new apollo_server_express_1.ApolloServer({ schema, context });
+        let serverGraphQL = new apollo_server_express_1.ApolloServer({
+            schema,
+            context: ({ req, res }) => {
+                return ({ em: orm.em, req, res });
+            }
+        });
         serverGraphQL.applyMiddleware({ app });
         app.listen(4000, () => {
             console.log(colors_1.default.green(`[+] Start server port ${4000}`));

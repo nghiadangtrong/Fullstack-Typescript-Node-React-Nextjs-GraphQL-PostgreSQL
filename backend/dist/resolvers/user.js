@@ -108,10 +108,9 @@ let UserResolvers = class UserResolvers {
             }
         });
     }
-    login(context, options) {
+    login({ em, req }, options) {
         return __awaiter(this, void 0, void 0, function* () {
-            let user = yield context.em.findOne(User_1.User, { username: options.username });
-            console.log(user);
+            let user = yield em.findOne(User_1.User, { username: options.username });
             if (!user) {
                 return {
                     errors: [{ field: 'username', message: "that username doesn't exist" }]
@@ -123,6 +122,7 @@ let UserResolvers = class UserResolvers {
                     errors: [{ field: 'passoword', message: 'incorrect password' }]
                 };
             }
+            req.session.userId = user.id;
             return { user };
         });
     }
